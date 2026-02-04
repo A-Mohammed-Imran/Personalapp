@@ -17,11 +17,14 @@ export interface Activity {
   title: string;
   description: string;
   url?: string;
+  appScheme?: string; // Deep link scheme for opening native apps
   icon: string;
   color: string;
   // Mobile-specific: background colors for React Native
   bgColor: string;
   textColor: string;
+  useAppIcon?: boolean; // Flag to use actual app logo instead of Feather icon
+  appIconUrl?: string | number; // URL for app logo image or local require()
 }
 
 // Morning Mode Configuration (Active until 6:30 AM)
@@ -30,8 +33,21 @@ export const MORNING_MODE: ScheduleConfig = {
   title: 'Morning Mode',
   description: 'Focus on English Language Learning',
   endTime: '06:30',
-  focus: ['English Language', 'LinkedIn Engagement'],
+  focus: ['English Language', 'LinkedIn Engagement', 'PeerUp Practice'],
   activities: [
+    {
+      id: 'peerup-english',
+      title: 'English Learning - PeerUp',
+      description: 'Practice English conversation with PeerUp',
+      appScheme: 'peerup://', // Deep link to open PeerUp app
+      url: 'https://play.google.com/store/apps/details?id=com.peerup', // Fallback if app not installed
+      icon: 'message-circle',
+      color: 'bg-indigo-600',
+      bgColor: '#4f46e5',
+      textColor: '#ffffff',
+      useAppIcon: true,
+      appIconUrl: require('../../assets/peerup-logo.png'), // Local PeerUp logo
+    },
     {
       id: 'english-reading',
       title: 'English Reading',
@@ -51,23 +67,17 @@ export const MORNING_MODE: ScheduleConfig = {
       textColor: '#ffffff',
     },
     {
-      id: 'english-listening',
-      title: 'Listening Practice',
-      description: 'Watch videos or listen to podcasts',
-      icon: 'headphones',
-      color: 'bg-green-500',
-      bgColor: '#22c55e',
-      textColor: '#ffffff',
-    },
-    {
       id: 'linkedin-zip',
       title: 'LinkedIn Zip Game',
       description: 'Complete the daily LinkedIn Zip game',
       url: 'https://www.linkedin.com/games/zip/',
+      appScheme: 'linkedin://', // Deep link to LinkedIn app
       icon: 'linkedin',
       color: 'bg-blue-600',
       bgColor: '#0a66c2',
       textColor: '#ffffff',
+      useAppIcon: true,
+      appIconUrl: require('../../assets/linkedin-logo.png'), // Local LinkedIn logo
     },
   ],
 };
@@ -177,14 +187,14 @@ export function getCurrentMode(): ModeType {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   const currentTimeInMinutes = currentHour * 60 + currentMinute;
-  
+
   // Morning mode is active before 6:30 AM (390 minutes)
   const morningEndTime = 6 * 60 + 30; // 6:30 AM in minutes
-  
+
   if (currentTimeInMinutes < morningEndTime) {
     return 'morning';
   }
-  
+
   // After 6:30 AM, default to Plan A (user can toggle)
   return 'planA';
 }
@@ -207,23 +217,23 @@ export function getScheduleByMode(mode: ModeType): ScheduleConfig {
 export function getTimeRemaining(): string {
   const now = new Date();
   const currentMode = getCurrentMode();
-  
+
   if (currentMode === 'morning') {
     const morningEnd = new Date();
     morningEnd.setHours(6, 30, 0, 0);
-    
+
     // If we're past 6:30, it means morning mode is over
     if (now > morningEnd) {
       return 'Session ended';
     }
-    
+
     const diff = morningEnd.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     return `${hours}h ${minutes}m remaining`;
   }
-  
+
   return 'No time limit';
 }
 
@@ -231,22 +241,22 @@ export function getTimeRemaining(): string {
 export function getMorningProgress(): number {
   const now = new Date();
   const currentMode = getCurrentMode();
-  
+
   if (currentMode !== 'morning') {
     return 100; // Morning is over
   }
-  
+
   // Assuming morning starts at midnight (0:00)
   const morningStartMinutes = 0;
   const morningEndMinutes = 6 * 60 + 30; // 6:30 AM
-  
+
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   const currentTimeInMinutes = currentHour * 60 + currentMinute;
-  
+
   const totalDuration = morningEndMinutes - morningStartMinutes;
   const elapsed = currentTimeInMinutes - morningStartMinutes;
-  
+
   return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
 }
 
@@ -256,21 +266,21 @@ export function getWorkProgress(): number {
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   const currentTimeInMinutes = currentHour * 60 + currentMinute;
-  
+
   const workStartMinutes = 6 * 60 + 30; // 6:30 AM
   const workEndMinutes = 22 * 60; // 10:00 PM
-  
+
   if (currentTimeInMinutes < workStartMinutes) {
     return 0;
   }
-  
+
   if (currentTimeInMinutes >= workEndMinutes) {
     return 100;
   }
-  
+
   const totalWorkMinutes = workEndMinutes - workStartMinutes;
   const elapsedMinutes = currentTimeInMinutes - workStartMinutes;
-  
+
   return Math.min(100, Math.max(0, (elapsedMinutes / totalWorkMinutes) * 100));
 }
 

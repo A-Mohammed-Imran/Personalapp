@@ -19,14 +19,15 @@ export default function LiveClock({ currentTime, isMorningMode }: LiveClockProps
       end={{ x: 1, y: 1 }}
       style={{
         marginHorizontal: 16,
+        marginTop: 8,
         marginBottom: 16,
-        borderRadius: 20,
-        padding: 20,
+        borderRadius: 24,
+        padding: 24,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 8,
       }}
     >
       <View className="flex-row items-center justify-between">

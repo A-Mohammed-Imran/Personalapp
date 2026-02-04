@@ -12,6 +12,9 @@ interface DailyProgressProps {
   sessionType: ModeType;
   startTime: string;
   endTime: string;
+  completedTasks?: number;
+  totalTasks?: number;
+  taskCompletionPercentage?: number;
 }
 
 export default function DailyProgress({
@@ -20,6 +23,9 @@ export default function DailyProgress({
   sessionType,
   startTime,
   endTime,
+  completedTasks = 0,
+  totalTasks = 0,
+  taskCompletionPercentage = 0,
 }: DailyProgressProps) {
   const getSessionConfig = () => {
     switch (sessionType) {
@@ -48,14 +54,17 @@ export default function DailyProgress({
   };
 
   const config = getSessionConfig();
-  const isComplete = progress >= 100;
+
+  // Use task completion percentage if available, otherwise use time-based progress
+  const displayProgress = totalTasks > 0 ? taskCompletionPercentage : progress;
+  const isComplete = displayProgress >= 100;
 
   const getMotivationalMessage = () => {
-    if (isComplete) return "🎉 Session complete! Great work!";
-    if (progress < 25) return "🚀 Great start! Keep the momentum!";
-    if (progress < 50) return "💪 You're making progress!";
-    if (progress < 75) return "⭐ Halfway there! Amazing!";
-    return "🏁 Almost done! Push through!";
+    if (isComplete) return `🎉 All ${totalTasks} tasks complete! Great work!`;
+    if (displayProgress < 25) return `🚀 ${completedTasks}/${totalTasks} tasks done! Keep going!`;
+    if (displayProgress < 50) return `💪 ${completedTasks}/${totalTasks} completed! You're making progress!`;
+    if (displayProgress < 75) return `⭐ ${completedTasks}/${totalTasks} done! Halfway there!`;
+    return `🏁 ${completedTasks}/${totalTasks} tasks! Almost done!`;
   };
 
   return (
@@ -141,7 +150,7 @@ export default function DailyProgress({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
-              width: `${Math.min(progress, 100)}%`,
+              width: `${Math.min(displayProgress, 100)}%`,
               height: '100%',
             }}
           />
@@ -157,9 +166,9 @@ export default function DailyProgress({
             <Text style={{
               fontWeight: 'bold',
               fontSize: 14,
-              color: progress > 50 ? '#ffffff' : '#374151',
+              color: displayProgress > 50 ? '#ffffff' : '#374151',
             }}>
-              {Math.round(progress)}%
+              {Math.round(displayProgress)}%
             </Text>
           </View>
         </View>
@@ -176,7 +185,7 @@ export default function DailyProgress({
           }}>
             <Feather name="trending-up" size={22} color="#22c55e" />
             <Text className="text-gray-500 text-xs mt-2 font-medium">Progress</Text>
-            <Text className="font-bold text-gray-900 text-lg">{Math.round(progress)}%</Text>
+            <Text className="font-bold text-gray-900 text-lg">{Math.round(displayProgress)}%</Text>
           </View>
 
           <View style={{
