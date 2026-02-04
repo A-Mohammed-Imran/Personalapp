@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { ModeType } from '../config/schedule';
@@ -19,61 +19,94 @@ export default function CurrentStatus({
   description,
   timeRemaining,
 }: CurrentStatusProps) {
-  // Gradient colors based on mode
   const gradientColors: GradientTuple = mode === 'morning'
-    ? ['#f59e0b', '#f97316'] // Orange gradient for morning
+    ? ['#f59e0b', '#f97316']
     : mode === 'planA'
-      ? ['#6366f1', '#8b5cf6'] // Indigo to purple for Plan A
-      : ['#8b5cf6', '#ec4899']; // Purple to pink for Plan B
+      ? ['#6366f1', '#4f46e5']
+      : ['#ec4899', '#db2777'];
 
-  const icon = mode === 'morning' ? 'sunrise' : mode === 'planA' ? 'code' : 'book';
+  const icon = mode === 'morning' ? 'sunrise' : mode === 'planA' ? 'code' : 'layers';
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        marginHorizontal: 16,
-        marginBottom: 16,
-        borderRadius: 24,
-        padding: 24,
-        shadowColor: gradientColors[0],
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-        elevation: 8,
-      }}
-    >
-      <View className="flex-row items-start justify-between mb-4">
-        <View className="flex-1">
-          <Text className="text-white text-2xl font-bold mb-2">{title}</Text>
-          <Text className="text-white/80 text-base">{description}</Text>
+    <View style={styles.container}>
+      {/* Subtle Background Glow */}
+      <View style={[styles.glow, { backgroundColor: `${gradientColors[0]}10` }]} />
+
+      <View className="flex-row items-start justify-between mb-8">
+        <View className="flex-1 mr-4">
+          <View className="flex-row items-center mb-3">
+            <View style={{ backgroundColor: `${gradientColors[0]}20` }} className="px-3 py-1 rounded-lg border border-white/5">
+              <Text className="text-[10px] font-black uppercase tracking-[2px]" style={{ color: gradientColors[0] }}>
+                {mode === 'morning' ? 'Morning Optimization' : mode === 'planA' ? 'Core Engineering' : 'Accelerated Path'}
+              </Text>
+            </View>
+          </View>
+          <Text className="text-white text-3xl font-black mb-2 tracking-tighter" numberOfLines={2}>
+            {title}
+          </Text>
+          <Text className="text-white/40 text-[13px] leading-5 font-medium">
+            {description}
+          </Text>
         </View>
 
-        <View style={{
-          backgroundColor: 'rgba(255,255,255,0.25)',
-          padding: 14,
-          borderRadius: 16,
-        }}>
-          <Feather name={icon} size={28} color="#ffffff" />
+        <View style={[styles.iconContainer, { borderColor: `${gradientColors[0]}40` }]}>
+          <LinearGradient
+            colors={[`${gradientColors[0]}30`, `${gradientColors[0]}10`]}
+            className="w-16 h-16 items-center justify-center rounded-2xl"
+          >
+            <Feather name={icon} size={32} color={gradientColors[0]} />
+          </LinearGradient>
         </View>
       </View>
 
-      {/* Time Status with Glassmorphism */}
-      <View style={{
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-      }}>
-        <View className="flex-row items-center">
-          <Feather name="clock" size={20} color="#ffffff" />
-          <Text className="text-white/70 text-sm ml-2 font-medium">Time Status</Text>
+      <View style={styles.timeCard}>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <View className="w-8 h-8 rounded-full items-center justify-center bg-white/5 mr-3">
+              <Feather name="clock" size={14} color="rgba(255,255,255,0.4)" />
+            </View>
+            <View>
+              <Text className="text-white/30 text-[9px] font-black uppercase tracking-widest">Session Time</Text>
+              <Text className="text-white/60 text-xs font-bold">Remaining</Text>
+            </View>
+          </View>
+          <View className="items-end">
+            <Text className="text-white text-2xl font-black tracking-tighter">{timeRemaining}</Text>
+          </View>
         </View>
-        <Text className="text-white text-xl font-bold mt-2">{timeRemaining}</Text>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 36,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
+  },
+  glow: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+  },
+  iconContainer: {
+    borderWidth: 1,
+    borderRadius: 24,
+    padding: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  },
+  timeCard: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  }
+});

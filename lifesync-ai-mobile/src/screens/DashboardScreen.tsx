@@ -8,10 +8,9 @@ import { useTaskTracking } from '../hooks/useTaskTracking';
 import { sendTestNotification } from '../services/notifications';
 import LiveClock from '../components/LiveClock';
 import CurrentStatus from '../components/CurrentStatus';
-import PlanSwitcher from '../components/PlanSwitcher';
-import SwipeablePlanSwitcher from '../components/SwipeablePlanSwitcher';
 import ActivityCard from '../components/ActivityCard';
 import DailyProgress from '../components/DailyProgress';
+import PremiumPlanSelector from '../components/PremiumPlanSelector';
 
 export default function DashboardScreen() {
   const {
@@ -68,225 +67,111 @@ export default function DashboardScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f0f4ff' }}>
-      {/* Status Bar Configuration */}
+    <View style={{ flex: 1, backgroundColor: '#050505' }}>
+      {/* Background Deep Gradient */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <LinearGradient
+          colors={['#0c0c1e', '#050505']}
+          style={{ flex: 1 }}
+        />
+        {/* Subtle spot light */}
+        <View style={{ position: 'absolute', top: -50, left: '50%', transform: [{ translateX: -150 }], width: 300, height: 300, borderRadius: 150, backgroundColor: '#4f46e510', opacity: 0.5 }} />
+      </View>
+
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
         translucent={true}
       />
 
-      <SafeAreaView className="flex-1" style={{ backgroundColor: 'transparent' }}>
-        {/* Header with Gradient */}
-        <LinearGradient
-          colors={['#6366f1', '#8b5cf6']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ? StatusBar.currentHeight + 12 : 40 : 12,
-            paddingHorizontal: 16,
-            paddingBottom: 20,
-            borderBottomLeftRadius: 24,
-            borderBottomRightRadius: 24,
-            shadowColor: '#6366f1',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 12,
-            elevation: 8,
-          }}
+      <SafeAreaView className="flex-1">
+        {/* Modern Header */}
+        <View
+          style={{ paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 10 }}
+          className="px-6 pb-4 flex-row items-center justify-between"
         >
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-3xl font-bold text-white">LifeSync AI</Text>
-              <Text className="text-white/80 text-sm mt-1">Your productivity companion</Text>
+          <View>
+            <View className="flex-row items-center mb-1">
+              <View className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-2" />
+              <Text className="text-white text-[10px] font-black tracking-[0.2em] uppercase opacity-40">System Active</Text>
             </View>
             <View className="flex-row items-center">
-              {/* Notification Bell */}
-              <TouchableOpacity
-                onPress={handleNotificationPress}
-                className="mr-3 p-3 rounded-full"
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-              >
-                <View className="relative">
-                  <Feather
-                    name="bell"
-                    size={22}
-                    color="#ffffff"
-                  />
-                  {permissionGranted && isScheduled && (
-                    <View
-                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2"
-                      style={{ backgroundColor: '#10b981', borderColor: '#ffffff' }}
-                    />
-                  )}
-                </View>
-              </TouchableOpacity>
-              {/* Mode Badge */}
-              <View
-                className="px-4 py-2 rounded-full"
-                style={{
-                  backgroundColor: isMorningMode
-                    ? 'rgba(251, 191, 36, 0.3)'
-                    : displayMode === 'planA'
-                      ? 'rgba(255, 255, 255, 0.25)'
-                      : 'rgba(236, 72, 153, 0.3)',
-                }}
-              >
-                <Text className="font-bold text-sm text-white">
-                  {isMorningMode ? '🌅 Morning' : displayMode === 'planA' ? '💼 Plan A' : '📚 Plan B'}
-                </Text>
+              <Text className="text-3xl font-black text-white tracking-tight">Dashboard</Text>
+              <View className="ml-3 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+                <View className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               </View>
             </View>
           </View>
-        </LinearGradient>
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={handleNotificationPress}
+              activeOpacity={0.7}
+              className="w-11 h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 mr-3"
+            >
+              <Feather name="bell" size={20} color="#ffffff" />
+              {permissionGranted && isScheduled && (
+                <View className="absolute top-3 right-3 w-2 h-2 rounded-full bg-indigo-500 border border-[#050505]" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              className="px-4 py-2.5 rounded-2xl border border-white/10 bg-white/5"
+            >
+              <Text className="text-white text-[10px] font-black tracking-widest uppercase">
+                {isMorningMode ? 'Morning' : selectedPlan === 'planA' ? 'Plan A' : 'Plan B'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="py-4">
-            {/* Live Clock */}
-            <LiveClock currentTime={currentTime} isMorningMode={isMorningMode} />
-
-            {/* Current Status */}
-            <CurrentStatus
-              mode={displayMode}
-              title={scheduleConfig.title}
-              description={scheduleConfig.description}
-              timeRemaining={timeRemaining}
-            />
-
-            {/* Swipeable Plan Switcher - Mobile Gesture */}
-            <SwipeablePlanSwitcher
-              currentPlan={selectedPlan}
-              onPlanChange={setSelectedPlan}
-              disabled={isMorningMode}
-            />
-
-            {/* Button Plan Switcher - Fallback */}
-            <PlanSwitcher
-              currentPlan={selectedPlan}
-              onPlanChange={setSelectedPlan}
-              disabled={isMorningMode}
-            />
-
-            {/* Focus Areas */}
-            <View style={{
-              backgroundColor: '#ffffff',
-              borderRadius: 20,
-              padding: 20,
-              marginHorizontal: 16,
-              marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 8,
-              elevation: 3,
-            }}>
-              <View className="flex-row items-center mb-4">
-                <View style={{
-                  backgroundColor: '#6366f1',
-                  padding: 8,
-                  borderRadius: 10,
-                  marginRight: 10,
-                }}>
-                  <Feather name="target" size={18} color="#ffffff" />
-                </View>
-                <Text className="text-gray-900 font-bold text-lg">Today's Focus</Text>
-              </View>
-              <View className="flex-row flex-wrap">
-                {scheduleConfig.focus.map((item, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      backgroundColor: '#eef2ff',
-                      paddingHorizontal: 14,
-                      paddingVertical: 8,
-                      borderRadius: 12,
-                      marginRight: 8,
-                      marginBottom: 8,
-                      borderWidth: 1,
-                      borderColor: '#c7d2fe',
-                    }}
-                  >
-                    <Text style={{ color: '#6366f1', fontWeight: '600', fontSize: 13 }}>{item}</Text>
-                  </View>
-                ))}
-              </View>
+          <View className="py-2 px-6">
+            {/* Elegant Live Clock */}
+            <View className="mb-8">
+              <LiveClock currentTime={currentTime} isMorningMode={isMorningMode} />
             </View>
 
-            {/* Daily Task Timer */}
-            {completedTasks.length < totalTasks && (
-              <View style={{
-                marginHorizontal: 16,
-                marginBottom: 16,
-                borderRadius: 20,
-                overflow: 'hidden',
-                shadowColor: '#6366f1',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
-                elevation: 4,
-              }}>
-                <LinearGradient
-                  colors={['#6366f1', '#8b5cf6']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{ padding: 16 }}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                      <View style={{
-                        backgroundColor: 'rgba(255,255,255,0.25)',
-                        padding: 10,
-                        borderRadius: 12,
-                        marginRight: 12,
-                      }}>
-                        <Feather name="clock" size={20} color="#ffffff" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-white font-bold text-base">
-                          Complete Today's Tasks
-                        </Text>
-                        <Text className="text-white/80 text-sm mt-1">
-                          {completedTasks.length}/{totalTasks} tasks done
-                        </Text>
-                      </View>
-                    </View>
-                    <View className="items-end">
-                      <Text className="text-white/70 text-xs">Time Left</Text>
-                      <Text className="text-white font-bold text-lg">{timeUntilMidnight}</Text>
-                    </View>
-                  </View>
-                </LinearGradient>
-              </View>
-            )}
+            {/* Glass Status Card */}
+            <View className="mb-8">
+              <CurrentStatus
+                mode={displayMode}
+                title={scheduleConfig.title}
+                description={scheduleConfig.description}
+                timeRemaining={timeRemaining}
+              />
+            </View>
 
-            {/* Activity Cards */}
-            <View className="mx-4 mb-4">
-              <View className="flex-row items-center justify-between mb-4">
-                <View className="flex-row items-center">
-                  <View style={{
-                    backgroundColor: '#8b5cf6',
-                    padding: 8,
-                    borderRadius: 10,
-                    marginRight: 10,
-                  }}>
-                    <Feather name="zap" size={18} color="#ffffff" />
+            {/* Segmented Control for Plans */}
+            <View className="mb-12">
+              <View className="flex-row items-center mb-6 px-1">
+                <View className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-3 shadow-[0_0_8px_#6366f1]" />
+                <Text className="text-white text-lg font-black tracking-tight uppercase opacity-50">Select Execution Plan</Text>
+              </View>
+              <PremiumPlanSelector
+                currentPlan={selectedPlan}
+                onPlanChange={setSelectedPlan}
+                disabled={isMorningMode}
+              />
+            </View>
+
+            {/* Action Cards Section */}
+            <View className="mb-10">
+              <View className="flex-row items-center justify-between mb-8">
+                <View>
+                  <Text className="text-white text-2xl font-black mb-1">Core Activities</Text>
+                  <View className="flex-row items-center">
+                    <View className="px-2 py-0.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 mr-2">
+                      <Text className="text-indigo-400 text-[9px] font-black uppercase tracking-widest">{completedTasks.length} / {totalTasks} Completed</Text>
+                    </View>
                   </View>
-                  <Text className="text-gray-900 font-bold text-xl">Action Cards</Text>
                 </View>
-                <View style={{
-                  backgroundColor: completedTasks.length === totalTasks ? '#10b981' : '#f3f4f6',
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 12,
-                }}>
-                  <Text style={{
-                    color: completedTasks.length === totalTasks ? '#ffffff' : '#6b7280',
-                    fontSize: 12,
-                    fontWeight: '700'
-                  }}>
-                    {completedTasks.length}/{totalTasks} ✓
-                  </Text>
-                </View>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  className="flex-row items-center bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10"
+                >
+                  <Text className="text-white/60 text-[10px] font-black uppercase tracking-widest mr-2">Schedule</Text>
+                  <Feather name="calendar" size={14} color="rgba(255,255,255,0.4)" />
+                </TouchableOpacity>
               </View>
 
               {scheduleConfig.activities.map((activity) => (
@@ -302,116 +187,75 @@ export default function DashboardScreen() {
               ))}
             </View>
 
-            {/* Daily Progress */}
-            <DailyProgress
-              progress={progress}
-              timeRemaining={timeRemaining}
-              sessionType={displayMode}
-              startTime={sessionStartTime}
-              endTime={sessionEndTime}
-              completedTasks={completedTasks.length}
-              totalTasks={totalTasks}
-              taskCompletionPercentage={completionPercentage}
-            />
+            {/* Progress Visualization */}
+            <View className="mb-10">
+              <DailyProgress
+                progress={progress}
+                timeRemaining={timeRemaining}
+                sessionType={displayMode}
+                startTime={sessionStartTime}
+                endTime={sessionEndTime}
+                completedTasks={completedTasks.length}
+                totalTasks={totalTasks}
+                taskCompletionPercentage={completionPercentage}
+              />
+            </View>
 
-            {/* LinkedIn Streak Warning Banner */}
+            {/* Streak Risk Alert (Premium Styled) */}
             {streakAtRisk && linkedInStreak.currentStreak > 0 && (
-              <View style={{
-                marginHorizontal: 16,
-                marginBottom: 16,
-                borderRadius: 20,
-                overflow: 'hidden',
-                shadowColor: '#ef4444',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 6,
-              }}>
+              <TouchableOpacity activeOpacity={0.9} className="mb-6">
                 <LinearGradient
-                  colors={['#ef4444', '#f97316']}
+                  colors={['#ef4444', '#b91c1c']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={{ padding: 18 }}
+                  style={{ padding: 20, borderRadius: 24 }}
                 >
                   <View className="flex-row items-center">
-                    <View style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      padding: 12,
-                      borderRadius: 14,
-                      marginRight: 14,
-                    }}>
+                    <View className="bg-white/20 p-3 rounded-2xl mr-4">
                       <Feather name="alert-triangle" size={24} color="#ffffff" />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-white font-bold text-lg mb-1">
-                        ⚠️ Streak at Risk!
-                      </Text>
-                      <Text className="text-white/90 text-sm">
-                        Complete LinkedIn Zip to maintain your {linkedInStreak.currentStreak}-day streak!
-                      </Text>
-                      <Text className="text-white/80 text-xs mt-1">
-                        ⏰ {timeUntilMidnight} remaining
-                      </Text>
+                      <Text className="text-white font-black text-lg">Streak Critical</Text>
+                      <Text className="text-white/80 text-sm">Finish LinkedIn Zip to save your {linkedInStreak.currentStreak}d streak.</Text>
                     </View>
                   </View>
                 </LinearGradient>
-              </View>
+              </TouchableOpacity>
             )}
 
-            {/* Notification Status Card */}
+            {/* Integration Support Link */}
             <TouchableOpacity
-              onPress={handleNotificationPress}
               activeOpacity={0.8}
-              style={{
-                backgroundColor: permissionGranted ? '#f0fdf4' : '#ffffff',
-                borderRadius: 20,
-                padding: 18,
-                marginHorizontal: 16,
-                marginBottom: 16,
-                borderWidth: permissionGranted ? 2 : 1,
-                borderColor: permissionGranted ? '#22c55e' : '#e5e7eb',
-                shadowColor: permissionGranted ? '#22c55e' : '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: permissionGranted ? 0.2 : 0.08,
-                shadowRadius: 8,
-                elevation: 4,
-              }}
+              className="mb-12 p-6 rounded-[32px] border border-white/10 bg-white/5 flex-row items-center justify-between"
             >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                  <View style={{
-                    backgroundColor: permissionGranted ? '#22c55e' : '#f3f4f6',
-                    padding: 14,
-                    borderRadius: 14,
-                    marginRight: 14,
-                  }}>
-                    <Feather
-                      name={permissionGranted ? 'bell' : 'bell-off'}
-                      size={24}
-                      color={permissionGranted ? '#ffffff' : '#9ca3af'}
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="font-bold text-gray-900 text-base mb-1">
-                      {permissionGranted ? '6:30 AM Alert Active' : 'Enable Notifications'}
-                    </Text>
-                    <Text className="text-gray-600 text-sm">
-                      {permissionGranted
-                        ? 'You\'ll be notified when Morning Mode ends'
-                        : 'Tap to enable morning alerts'}
-                    </Text>
-                  </View>
+              <View className="flex-row items-center">
+                <View className="bg-indigo-500/20 w-14 h-14 items-center justify-center rounded-2xl mr-4 border border-indigo-500/20">
+                  <Feather name="bar-chart-2" size={24} color="#818cf8" />
                 </View>
-                <Feather
-                  name="chevron-right"
-                  size={22}
-                  color={permissionGranted ? '#22c55e' : '#9ca3af'}
-                />
+                <View>
+                  <Text className="text-white font-black text-lg">Performance Insights</Text>
+                  <Text className="text-white/30 text-xs mt-0.5">View your productivity analytics</Text>
+                </View>
+              </View>
+              <View className="w-10 h-10 items-center justify-center rounded-full bg-white/5 border border-white/10">
+                <Feather name="arrow-right" size={20} color="rgba(255,255,255,0.4)" />
               </View>
             </TouchableOpacity>
+
+            {/* Footer Branding */}
+            <View className="items-center py-6 mb-10">
+              <View className="flex-row items-center opacity-20 mb-2">
+                <View className="h-[1px] w-8 bg-white mr-4" />
+                <Feather name="zap" size={14} color="#ffffff" />
+                <View className="h-[1px] w-8 bg-white ml-4" />
+              </View>
+              <Text className="text-white/20 text-[10px] font-black tracking-[0.3em] uppercase">Powered by LifeSync OS</Text>
+            </View>
+
           </View>
         </ScrollView>
       </SafeAreaView>
     </View>
   );
 }
+

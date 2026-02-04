@@ -55,39 +55,48 @@ export default function ActivityCard({
   return (
     <View
       style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 20,
-        padding: 18,
-        marginBottom: 12,
-        borderLeftWidth: 5,
-        borderLeftColor: isCompleted ? '#10b981' : activity.bgColor,
-        shadowColor: activity.bgColor,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 4,
-        opacity: isCompleted ? 0.7 : 1,
+        backgroundColor: isCompleted ? 'rgba(255, 255, 255, 0.015)' : 'rgba(255, 255, 255, 0.04)',
+        borderRadius: 32,
+        padding: 20,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: isCompleted ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.08)',
+        overflow: 'hidden',
       }}
     >
-      <View className="flex-row items-center justify-between">
-        {/* Checkbox */}
+      {/* Dynamic Accent Strip */}
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 24,
+          bottom: 24,
+          width: 4,
+          backgroundColor: isCompleted ? '#10b981' : activity.bgColor,
+          borderRadius: 8,
+          opacity: isCompleted ? 0.2 : 0.8,
+        }}
+      />
+
+      <View className="flex-row items-center">
+        {/* Checkbox (Mechanical Feel) */}
         <TouchableOpacity
           onPress={handleCheckboxPress}
+          activeOpacity={0.7}
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
+            width: 32,
+            height: 32,
+            borderRadius: 12,
             borderWidth: 2,
-            borderColor: isCompleted ? '#10b981' : activity.bgColor,
-            backgroundColor: isCompleted ? '#10b981' : '#ffffff',
+            borderColor: isCompleted ? '#10b981' : 'rgba(255,255,255,0.12)',
+            backgroundColor: isCompleted ? '#10b981' : 'transparent',
             alignItems: 'center',
             justifyContent: 'center',
-            marginRight: 12,
+            marginLeft: 8,
+            marginRight: 18,
           }}
         >
-          {isCompleted && (
-            <Feather name="check" size={18} color="#ffffff" />
-          )}
+          {isCompleted && <Feather name="check" size={20} color="#ffffff" />}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -96,89 +105,78 @@ export default function ActivityCard({
           activeOpacity={0.7}
           className="flex-row items-center flex-1"
         >
-          {/* Icon with colored background or App Logo */}
+          {/* Enhanced Icon Container */}
           <View
             style={{
-              backgroundColor: activity.useAppIcon ? '#ffffff' : activity.bgColor,
-              padding: activity.useAppIcon ? 8 : 14,
-              borderRadius: 14,
-              marginRight: 14,
-              borderWidth: activity.useAppIcon ? 1 : 0,
-              borderColor: activity.useAppIcon ? '#e5e7eb' : 'transparent',
+              backgroundColor: isCompleted ? 'rgba(255,255,255,0.03)' : `${activity.bgColor}20`,
+              width: 56,
+              height: 56,
+              borderRadius: 20,
+              marginRight: 18,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1.5,
+              borderColor: isCompleted ? 'rgba(255,255,255,0.05)' : `${activity.bgColor}40`,
             }}
           >
             {activity.useAppIcon && activity.appIconUrl ? (
               <Image
-                source={typeof activity.appIconUrl === 'string'
-                  ? { uri: activity.appIconUrl }
-                  : activity.appIconUrl
-                }
-                style={{ width: 40, height: 40, borderRadius: 8 }}
+                source={typeof activity.appIconUrl === 'string' ? { uri: activity.appIconUrl } : activity.appIconUrl}
+                style={{ width: 34, height: 34, opacity: isCompleted ? 0.3 : 1 }}
                 resizeMode="contain"
               />
             ) : (
-              <Feather name={activity.icon as any} size={24} color="#ffffff" />
+              <Feather
+                name={activity.icon as any}
+                size={24}
+                color={isCompleted ? 'rgba(255,255,255,0.2)' : activity.bgColor}
+              />
             )}
           </View>
 
-          {/* Content */}
+          {/* Content Stack */}
           <View className="flex-1">
             <Text
-              className="text-gray-900 font-bold text-base mb-1"
-              style={{ textDecorationLine: isCompleted ? 'line-through' : 'none' }}
+              className="text-white font-black text-[18px] tracking-tight mb-1"
+              style={{ opacity: isCompleted ? 0.3 : 1 }}
             >
               {activity.title}
             </Text>
-            <Text className="text-gray-600 text-sm" numberOfLines={2}>
+            <Text
+              className="text-white/40 text-[12px] leading-4 font-bold"
+              numberOfLines={1}
+              style={{ opacity: isCompleted ? 0.2 : 0.6 }}
+            >
               {activity.description}
             </Text>
 
-            {/* Streak indicator for LinkedIn */}
-            {showStreak && streakCount > 0 && (
-              <View className="flex-row items-center mt-2">
-                <Feather
-                  name="zap"
-                  size={14}
-                  color={streakAtRisk ? '#ef4444' : '#f59e0b'}
-                />
-                <Text style={{
-                  color: streakAtRisk ? '#ef4444' : '#f59e0b',
-                  fontSize: 12,
-                  marginLeft: 4,
-                  fontWeight: '700'
-                }}>
-                  {streakCount} day streak {streakAtRisk ? '⚠️ At Risk!' : '🔥'}
-                </Text>
-              </View>
-            )}
+            {/* Context Badges */}
+            <View className="flex-row items-center mt-3">
+              {showStreak && streakCount > 0 && (
+                <View className="bg-amber-500/15 px-2.5 py-1 rounded-lg border border-amber-500/20 mr-2 flex-row items-center">
+                  <Feather name="zap" size={10} color={streakAtRisk ? '#ef4444' : '#fbbf24'} />
+                  <Text className={`text-[9px] font-black uppercase ml-1.5 ${streakAtRisk ? 'text-red-500' : 'text-amber-400'}`}>
+                    {streakCount} Day Streak
+                  </Text>
+                </View>
+              )}
 
-            {(activity.url || activity.appScheme) && !showStreak && (
-              <View className="flex-row items-center mt-2">
-                <Feather
-                  name={activity.appScheme ? "smartphone" : "link"}
-                  size={14}
-                  color={activity.bgColor}
-                />
-                <Text style={{ color: activity.bgColor, fontSize: 12, marginLeft: 4, fontWeight: '600' }}>
-                  {activity.appScheme ? 'Open App' : 'External Link'}
-                </Text>
-              </View>
-            )}
+              {(activity.url || activity.appScheme) && !isCompleted && (
+                <View className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex-row items-center">
+                  <Text className="text-white/30 text-[8px] font-black uppercase tracking-widest">
+                    {activity.appScheme ? 'Native System' : 'External'}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </TouchableOpacity>
 
-        {/* Arrow indicator */}
-        {(activity.url || activity.appScheme) && (
-          <TouchableOpacity onPress={handlePress}>
-            <View style={{
-              backgroundColor: `${activity.bgColor}15`,
-              padding: 10,
-              borderRadius: 12,
-              marginLeft: 8,
-            }}>
-              <Feather name="arrow-right" size={20} color={activity.bgColor} />
-            </View>
-          </TouchableOpacity>
+        {/* Minimal Action Indicator */}
+        {(activity.url || activity.appScheme) && !isCompleted && (
+          <View className="pr-1 opacity-20">
+            <Feather name="chevron-right" size={18} color="#ffffff" />
+          </View>
         )}
       </View>
     </View>
